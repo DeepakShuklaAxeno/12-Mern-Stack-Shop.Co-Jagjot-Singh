@@ -33,3 +33,35 @@
   --font-sans: "Satoshi", sans-serif;
   --font-integral: "Integral CF", sans-serif;
 }
+
+.page-gutter {
+  padding-inline: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .page-gutter {
+    padding-inline: 100px;
+  }
+}
+
+.hero-shell {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (max-width: 1023px) {
+  .hero-copy {
+    background-color: transparent;
+  }
+
+  .hero-shell {
+    background-image: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-copy {
+    background-color: transparent;
+  }
+}

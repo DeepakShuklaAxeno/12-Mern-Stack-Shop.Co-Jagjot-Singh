@@ -1,12 +1,200 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
-const initial = { name: "", description: "", category: "", markedPrice: "", sellingPrice: "", discountPercentage: "", stockQuantity: "", images: "", sizeOptions: "Small,Medium,Large,X-Large", colorOptions: "" };
+const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_API_BASE_URL ||
+  "http://localhost:5000/api/";
+
+const initial = {
+  name: "",
+  description: "",
+  category: "",
+  markedPrice: "",
+  sellingPrice: "",
+  discountPercentage: "",
+  stockQuantity: "",
+  images: "",
+  sizeOptions: "Small,Medium,Large,X-Large",
+  colorOptions: "",
+};
+
 export default function AdminProductForm() {
-  const { productId } = useParams(); const navigate = useNavigate(); const [form, setForm] = useState(initial); const [categories, setCategories] = useState([]); const [message, setMessage] = useState("");
-  useEffect(() => { fetch(`${API_BASE_URL}admin/categories`, { credentials: "include" }).then((response) => response.json()).then((data) => setCategories(data.categories || [])); if (productId) fetch(`${API_BASE_URL}products/${productId}`).then((response) => response.json()).then((data) => { const product = data.product; setForm({ ...product, images: product.images?.join(",") || "", sizeOptions: product.sizeOptions?.join(",") || "", colorOptions: product.colorOptions?.join(",") || "" }); }); }, [productId]);
-  const submit = async (event) => { event.preventDefault(); const body = { ...form, markedPrice: Number(form.markedPrice), sellingPrice: Number(form.sellingPrice), discountPercentage: Number(form.discountPercentage || 0), stockQuantity: Number(form.stockQuantity), images: form.images.split(",").map((value) => value.trim()).filter(Boolean), sizeOptions: form.sizeOptions.split(",").map((value) => value.trim()).filter(Boolean), colorOptions: form.colorOptions.split(",").map((value) => value.trim()).filter(Boolean) }; const response = await fetch(`${API_BASE_URL}admin/products${productId ? `/${productId}` : ""}`, { method: productId ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(body) }); const data = await response.json(); setMessage(data.message); if (response.ok) navigate("/admin"); };
-  const fields = [["name", "Product name"], ["description", "Description"], ["markedPrice", "Marked price"], ["sellingPrice", "Selling price"], ["discountPercentage", "Discount percentage"], ["stockQuantity", "Stock quantity"], ["images", "Image URLs (comma separated)"], ["sizeOptions", "Sizes (comma separated)"], ["colorOptions", "Colors (comma separated)"]];
-  return <main className="mx-auto max-w-190 px-4 py-8 font-sans sm:px-6"><div className="flex items-center justify-between"><h1 className="font-integral text-3xl uppercase">{productId ? "Edit Product" : "Create Product"}</h1><Link className="text-sm underline" to="/admin">Back to admin</Link></div><form className="mt-8 rounded-2xl border border-black/10 p-6" onSubmit={submit}>{fields.map(([key, label]) => <label className="mt-4 block text-sm font-bold first:mt-0" key={key}>{label}{key === "description" ? <textarea className="mt-2 min-h-28 w-full rounded-xl bg-[#f0f0f0] p-4 font-normal outline-none" onChange={(event) => setForm({ ...form, [key]: event.target.value })} value={form[key] || ""} /> : <input className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none" onChange={(event) => setForm({ ...form, [key]: event.target.value })} value={form[key] || ""} />}</label>)}<label className="mt-4 block text-sm font-bold">Category<select className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none" onChange={(event) => setForm({ ...form, category: event.target.value })} value={form.category || ""}><option value="">Select category</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label><button className="mt-6 w-full rounded-full bg-black py-4 text-sm text-white" type="submit">{productId ? "Save Product" : "Create Product"}</button>{message && <p className="mt-3 text-sm text-black/60">{message}</p>}</form></main>;
+  const { productId } = useParams();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState(initial);
+  const [categories, setCategories] = useState([]);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}admin/categories`, {
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => setCategories(data.categories || []));
+
+    if (productId) {
+      fetch(`${API_BASE_URL}products/${productId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const product = data.product;
+
+          setForm({
+            ...product,
+            images: product.images?.join(",") || "",
+            sizeOptions: product.sizeOptions?.join(",") || "",
+            colorOptions: product.colorOptions?.join(",") || "",
+          });
+        });
+    }
+  }, [productId]);
+
+  const submit = async (event) => {
+    event.preventDefault();
+
+    const body = {
+      ...form,
+      markedPrice: Number(form.markedPrice),
+      sellingPrice: Number(form.sellingPrice),
+      discountPercentage: Number(form.discountPercentage || 0),
+      stockQuantity: Number(form.stockQuantity),
+
+      images: form.images
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+
+      sizeOptions: form.sizeOptions
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+
+      colorOptions: form.colorOptions
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    };
+
+    const response = await fetch(
+      `${API_BASE_URL}admin/products${productId ? `/${productId}` : ""}`,
+      {
+        method: productId ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(body),
+      }
+    );
+
+    const data = await response.json();
+
+    setMessage(data.message);
+
+    if (response.ok) {
+      navigate("/admin");
+    }
+  };
+
+  const fields = [
+    ["name", "Product name"],
+    ["description", "Description"],
+    ["markedPrice", "Marked price"],
+    ["sellingPrice", "Selling price"],
+    ["discountPercentage", "Discount percentage"],
+    ["stockQuantity", "Stock quantity"],
+    ["images", "Image URLs (comma separated)"],
+    ["sizeOptions", "Sizes (comma separated)"],
+    ["colorOptions", "Colors (comma separated)"],
+  ];
+
+  return (
+    <main className="mx-auto max-w-190 px-4 py-8 bg-25 font-sans sm:px-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-integral text-3xl uppercase">
+          {productId ? "Edit Product" : "Create Product"}
+        </h1>
+
+        <Link className="text-sm underline" to="/admin">
+          Back to admin
+        </Link>
+      </div>
+
+      <form
+        className="mt-8 rounded-2xl border border-black/10 p-6"
+        onSubmit={submit}
+      >
+        {fields.map(([key, label]) => (
+          <label
+            className="mt-4 block text-sm font-bold first:mt-0"
+            key={key}
+          >
+            {label}
+
+            {key === "description" ? (
+              <textarea
+                className="mt-2 min-h-28 w-full rounded-xl bg-[#f0f0f0] p-4 font-normal outline-none"
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    [key]: event.target.value,
+                  })
+                }
+                value={form[key] || ""}
+              />
+            ) : (
+              <input
+                className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none"
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    [key]: event.target.value,
+                  })
+                }
+                value={form[key] || ""}
+              />
+            )}
+          </label>
+        ))}
+
+        <label className="mt-4 block text-sm font-bold">
+          Category
+
+          <select
+            className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none"
+            onChange={(event) =>
+              setForm({
+                ...form,
+                category: event.target.value,
+              })
+            }
+            value={form.category || ""}
+          >
+            <option value="">Select category</option>
+
+            {categories.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          className="mt-6 w-full rounded-full bg-black py-4 text-sm text-white"
+          type="submit"
+        >
+          {productId ? "Save Product" : "Create Product"}
+        </button>
+
+        {message && (
+          <p className="mt-3 text-sm text-black/60">
+            {message}
+          </p>
+        )}
+      </form>
+    </main>
+  );
 }
+

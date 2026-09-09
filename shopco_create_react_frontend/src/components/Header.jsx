@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
 
 function Icon({ children, label, className = "size-5" }) {
   return (
@@ -19,12 +21,41 @@ function Icon({ children, label, className = "size-5" }) {
   );
 }
 
-export default function Header() {
+export default function Header({cartCount=0}) {
   const [promoVisible, setPromoVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let active = true;
+
+    fetch(`${API_BASE_URL}auth/me`, { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (active) setUser(data?.user || null);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
+
+  async function handleLogout() {
+    await fetch(`${API_BASE_URL}auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    setUser(null);
+    setMenuOpen(false);
+    navigate("/", { replace: true });
+  }
 
   function submitSearch(event) {
     event.preventDefault();
@@ -57,7 +88,7 @@ export default function Header() {
         </div>
       )}
 
-      <div className="mx-auto flex min-h-20 max-w-300 items-center gap-4 px-4 sm:px-6 lg:gap-8 lg:px-8">
+      <div className="page-gutter mx-auto flex min-h-20 max-w-300 items-center gap-4 lg:gap-8">
         <button
           aria-expanded={menuOpen}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
@@ -79,6 +110,8 @@ export default function Header() {
           <Link className="transition-opacity hover:opacity-60" to="/categories">Categories</Link>
           <Link className="transition-opacity hover:opacity-60" to="/products?sort=newest">New Arrivals</Link>
           <Link className="transition-opacity hover:opacity-60" to="/products?sort=price-asc">On Sale</Link>
+          {user && <Link className="transition-opacity hover:opacity-60" to="/orders">Orders</Link>}
+          {user?.role === "admin" && <Link className="transition-opacity hover:opacity-60" to="/admin">Admin</Link>}
         </nav>
 
         <form className="hidden min-w-0 flex-1 lg:block" onSubmit={submitSearch} role="search">
@@ -99,12 +132,27 @@ export default function Header() {
           <button aria-label="Search" className="p-1 lg:hidden" onClick={() => setSearchOpen((open) => !open)} type="button">
             <Icon label="Search"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></Icon>
           </button>
-          <Link aria-label="Shopping cart" className="relative p-1" to="/cart">
-            <Icon label="Shopping cart"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h6.9a2 2 0 0 0 1.9-1.4L20 8H6" /><circle cx="10" cy="20" r="1" /><circle cx="17" cy="20" r="1" /></Icon>
+          <Link
+            aria-label={`Shopping cart with ${cartCount} items`}
+            className="relative p-1"
+            to="/cart"
+          >
+            <Icon label="Shopping cart">
+              <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h6.9a2 2 0 0 0 1.9-1.4L20 8H6" />
+              <circle cx="10" cy="20" r="1" />
+              <circle cx="17" cy="20" r="1" />
+            </Icon>
+
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                {cartCount}
+              </span>
+            )}
           </Link>
-          <Link aria-label="Account" className="p-1" to="/login">
+          <Link aria-label={user ? "Profile" : "Account"} className="p-1" to={user ? "/profile" : "/login"}>
             <Icon label="Account"><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></Icon>
           </Link>
+          {user && <button className="hidden font-sans text-sm underline underline-offset-2 lg:block" onClick={handleLogout} type="button">Log out</button>}
         </div>
       </div>
 
@@ -132,6 +180,10 @@ export default function Header() {
             <Link onClick={() => setMenuOpen(false)} to="/categories">Categories</Link>
             <Link onClick={() => setMenuOpen(false)} to="/products?sort=newest">New Arrivals</Link>
             <Link onClick={() => setMenuOpen(false)} to="/products?sort=price-asc">On Sale</Link>
+            {user && <Link onClick={() => setMenuOpen(false)} to="/orders">Orders</Link>}
+            {user && <Link onClick={() => setMenuOpen(false)} to="/profile">Profile</Link>}
+            {user?.role === "admin" && <Link onClick={() => setMenuOpen(false)} to="/admin">Admin Dashboard</Link>}
+            {user ? <button className="text-left" onClick={handleLogout} type="button">Log out</button> : <Link onClick={() => setMenuOpen(false)} to="/login">Log in</Link>}
           </div>
         </nav>
       )}
