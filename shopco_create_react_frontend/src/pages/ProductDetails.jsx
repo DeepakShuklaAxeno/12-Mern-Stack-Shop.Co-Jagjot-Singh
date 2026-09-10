@@ -9,7 +9,6 @@ import ReviewCard from "../components/ReviewCard";
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
 
-<<<<<<< HEAD
 function ChevronDown() {
   return (
     <svg
@@ -24,8 +23,6 @@ function ChevronDown() {
     </svg>
   );
 }
-=======
->>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
 
 
 export default function ProductDetails() {
@@ -290,7 +287,6 @@ export default function ProductDetails() {
 
                   <label className="mt-6 block text-sm font-bold">
                     Rating
-<<<<<<< HEAD
                     <span className="relative mt-2 block">
                       <select
                         className="w-full appearance-none rounded-full bg-[#f0f0f0] px-4 py-3 pr-10 font-normal"
@@ -305,19 +301,6 @@ export default function ProductDetails() {
                       </select>
                       <ChevronDown />
                     </span>
-=======
-                    <select
-                      className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal"
-                      onChange={(event) => setReviewRating(Number(event.target.value))}
-                      value={reviewRating}
-                    >
-                      <option value={5}>5 stars</option>
-                      <option value={4}>4 stars</option>
-                      <option value={3}>3 stars</option>
-                      <option value={2}>2 stars</option>
-                      <option value={1}>1 star</option>
-                    </select>
->>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
                   </label>
 
                   <label className="mt-5 block text-sm font-bold">
@@ -328,11 +311,7 @@ export default function ProductDetails() {
                       minLength={5}
                       onChange={(event) => setReviewText(event.target.value)}
                       placeholder="Share your experience"
-<<<<<<< HEAD
                       
-=======
-                      required
->>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
                       value={reviewText}
                     />
                   </label>

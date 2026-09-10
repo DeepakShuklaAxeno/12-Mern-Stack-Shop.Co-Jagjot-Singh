@@ -207,11 +207,9 @@ export default function Filters({
             </FilterGroup>
 
             <button
-<<<<<<< HEAD
+
                 className="  hover:shadow-mdmt-5 mt-4 w-full rounded-full bg-black py-3.5 font-sans text-sm text-white"
-=======
-                className="  hover:shadow-mdmt-5 w-full rounded-full bg-black py-3.5 font-sans text-sm text-white"
->>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
+
                 onClick={onClose}
                 type="button"
             >
