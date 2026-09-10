@@ -73,11 +73,9 @@ export default function Filters({
                 <div className="mt-2 space-y-4 font-sans text-base text-black/60">
                     {categories.map((category) => (
                         <button
-<<<<<<< HEAD
+
                             className="flex w-full justify-between transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95"
-=======
-                            className="flex w-full justify-between transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md"
->>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
+
                             key={category._id}
                             onClick={() =>
                                 update("category", category._id)
