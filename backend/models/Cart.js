@@ -35,7 +35,7 @@ const cartSchema = new mongoose.Schema({
             type: Number,
             required: true,
             min: 0,
-            max: 100
+            max: 90
         }
 
     }],
@@ -45,8 +45,9 @@ const cartSchema = new mongoose.Schema({
 }, {timestamps: true});
 
 cartSchema.methods.calculateTotals = function () {
-    this.subtotal = this.cartItems.reduce((acc, item) => acc + (item.product.sellingPrice * item.quantity), 0);
+    this.subtotal = this.cartItems.reduce((acc, item) => acc + (item.product.sellingPrice * item.quantity), 0);     
     this.discount = this.coupons.reduce((acc, coupon) => acc + (this.subtotal * (coupon.discountPercentage / 100)), 0);
+
     this.total = this.subtotal - this.discount;
 }
 

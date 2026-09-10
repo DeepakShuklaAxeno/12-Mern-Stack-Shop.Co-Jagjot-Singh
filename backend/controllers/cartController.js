@@ -98,13 +98,11 @@ const applyCoupon = async (req, res) => {
     const code = String(req.body.code || "").trim().toUpperCase();
     const coupons = { WELCOME10: 10, SALE20: 20 };
     if (!coupons[code]) return res.status(400).json({ message: "Invalid coupon" });
-    const cart = await Cart.findOneAndUpdate(
+    await Cart.findOneAndUpdate(
         { userId: req.user._id },
         { $addToSet: { coupons: { code, discountPercentage: coupons[code] } } },
         { new: true, upsert: true }
     );
-    cart.calculateTotals();
-    await cart.save();
     return res.status(200).json({ message: "Coupon applied", cart: await loadCart(req.user._id) });
 };
 

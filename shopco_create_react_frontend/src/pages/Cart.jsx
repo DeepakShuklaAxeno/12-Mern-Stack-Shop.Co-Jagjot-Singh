@@ -6,9 +6,17 @@ import QuantitySelector from "../components/QuantitySelector";
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
 
+const roundMoney = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
 export default function Cart() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
+  const [cartTotals, setCartTotals] = useState({
+    subtotal: 0,
+    discount: 0,
+    total: 0,
+    coupons: [],
+  });
   const [message, setMessage] = useState("");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -28,7 +36,10 @@ export default function Cart() {
           ? response.json()
           : Promise.reject(new Error("Sign in to load your cart"))
       )
-      .then((data) => setItems(data.cart.cartItems || []))
+      .then((data) => {
+        setItems(data.cart.cartItems || []);
+        setCartTotals(data.cart);
+      })
       .catch((error) => setMessage(error.message));
   }, []);
 
@@ -39,7 +50,12 @@ export default function Cart() {
       credentials: "include",
       body: JSON.stringify({ quantity }),
     });
-    if (response.ok) setItems((await response.json()).cart.cartItems);
+    if (response.ok) {
+      const data = await response.json();
+      setItems(data.cart.cartItems);
+      setCartTotals(data.cart);
+      window.dispatchEvent(new Event("cart-updated"));
+    }
   };
 
   const removeItem = async (item) => {
@@ -47,7 +63,12 @@ export default function Cart() {
       method: "DELETE",
       credentials: "include",
     });
-    if (response.ok) setItems((await response.json()).cart.cartItems);
+    if (response.ok) {
+      const data = await response.json();
+      setItems(data.cart.cartItems);
+      setCartTotals(data.cart);
+      window.dispatchEvent(new Event("cart-updated"));
+    }
   };
 
   const applyCoupon = async (code) => {
@@ -60,7 +81,9 @@ export default function Cart() {
     const data = await response.json();
     if (response.ok) {
       setItems(data.cart.cartItems);
-      setMessage("Coupon applied");
+      
+      setCartTotals(data.cart);
+      setMessage(`${code.trim().toUpperCase()} applied successfully`);
     } else {
       setMessage(data.message);
     }
@@ -89,12 +112,11 @@ export default function Cart() {
     }
   };
 
-  const subtotal = items.reduce(
-    (total, item) =>
-      total + Number(item.product?.sellingPrice || 0) * item.quantity,
-    0
+  const subtotal = roundMoney(Math.max(0, cartTotals.subtotal));
+  const discount = roundMoney(
+    Math.min(subtotal, Math.max(0, cartTotals.discount))
   );
-  const discount = Math.round(subtotal * 0.2);
+  const total = roundMoney(Math.max(0, subtotal - discount));
 
   return (
     <main className="bg-white px-4 mb-25 pb-16 text-black sm:px-6 lg:px-8">
@@ -109,7 +131,7 @@ export default function Cart() {
         </h1>
         {message && <p className="mt-3 text-sm text-green/50">{message}</p>}
         {!items.length ? (
-          <p className="mt-8 rounded-2xl border border-black/10 p-8 text-center font-sans text-black/60">
+          <p className="mt-8 rounded-2xl border border-black/10 p-8 text-center font-sans text-red/60">
             Your cart is empty.
           </p>
         ) : (
@@ -124,7 +146,7 @@ export default function Cart() {
                     {item.product?.images?.[0] && (
                       <img
                         alt={item.product.name}
-                        className="size-full rounded-xl object-cover"
+                        className="size-full rounded-xl p-1 object-contain"
                         src={item.product.images[0]}
                       />
                     )}
@@ -167,9 +189,11 @@ export default function Cart() {
             <div>
               <OrderSummary
                 discount={discount}
+                appliedCoupons={cartTotals.coupons}
                 onApplyCoupon={applyCoupon}
                 onCheckout={() => setCheckoutOpen(true)}
                 subtotal={subtotal}
+                total={total}
               />
               {checkoutOpen && (
                 <form
@@ -194,7 +218,7 @@ export default function Cart() {
                               [field]: event.target.value,
                             })
                           }
-                          required
+                          
                           value={shippingAddress[field]}
                         />
                       </label>

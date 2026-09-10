@@ -17,7 +17,7 @@ export default function AdminDashboard() {
                 response.ok
                     ? response.json()
                     : Promise.reject(
-                          new Error("Admin access required")
+                          new Error("Admin access ")
                       )
             )
             .then(setData)

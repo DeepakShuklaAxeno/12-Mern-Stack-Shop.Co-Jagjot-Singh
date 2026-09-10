@@ -71,7 +71,7 @@ const paymentMethods = [
 
 function Footer() {
   return (
-    <footer className="flow-root bg-[#f0f0f0] px-4 pb-6 text-black md:px-8 lg:px-25">
+    <footer className="flow-root  bg-[#f0f0f0] px-4 pb-6 text-black md:px-8 lg:px-25">
       <div className="w-full ">
         <NewsletterSignup/>
 

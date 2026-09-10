@@ -4,11 +4,12 @@ import BrandStrip from "../components/BrandStrip";
 import ProductSection from "../components/ProductSection";
 import ReviewCard from "../components/ReviewCard";
 import Hero from "../components/Hero";
-import getImageUrl from "../utls/imgageUrl";
 
 const API_BASE_URL =
     import.meta.env.VITE_BACKEND_API_BASE_URL ||
     "http://localhost:5000/api/";
+
+const styleImages = ["src/assets/casual.png","src/assets/formal.png","src/assets/party.png","src/assets/gym.png"];
 
 export default function Home() {
     const [products, setProducts] = useState([]);
@@ -20,11 +21,13 @@ export default function Home() {
                 response.ok
                     ? response.json()
                     : Promise.reject(
-                          new Error("Unable to load products")
-                      )
+                        new Error("Unable to load products")
+                    )
             )
             .then((data) => setProducts(data.products || []))
             .catch((requestError) => setError(requestError.message));
+
+            
     }, []);
 
     const styles = ["Casual", "Formal", "Party", "Gym"].map(
@@ -36,7 +39,7 @@ export default function Home() {
 
     return (
         <main className="overflow-hidden mb-25 bg-white text-black">
-            <Hero products={products}/>
+            <Hero products={products} />
 
             <BrandStrip />
 
@@ -70,21 +73,20 @@ export default function Home() {
                 <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:grid-rows-2">
                     {styles.map(({ name, product }, index) => (
                         <Link
-                            className={`group relative h-48 overflow-hidden rounded-2xl bg-white sm:h-64 ${
-                                index % 3 === 0
-                                    ? "lg:col-span-4"
-                                    : "lg:col-span-8"
-                            }`}
+                            className={`group relative h-48 overflow-hidden rounded-2xl bg-white sm:h-64 ${index % 3 === 0
+                                ? "lg:col-span-4"
+                                : "lg:col-span-8"
+                                }`}
                             key={name}
                             to={`/products?search=${name}`}
                         >
-                            {product?.images?.[0] && (
+                            
                                 <img
                                     alt={name}
                                     className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    src={getImageUrl(product.images[0])}
+                                    src={styleImages[index]}
                                 />
-                            )}
+                            
 
                             <span className="absolute left-6 top-5 font-sans text-2xl font-bold sm:text-3xl">
                                 {name}

@@ -183,7 +183,7 @@ export default function Products() {
               </p>
             )}
 
-            <div className="mt-10 flex items-center justify-between border-t border-black/10 pt-5 font-sans text-xs">
+            <div className="mt-10 flex items-center  justify-between border-t border-black/10 pt-5 font-sans text-xs">
               <button
                 className="rounded-lg border border-black/10 px-3 py-2 disabled:opacity-30"
                 disabled={page <= 1}

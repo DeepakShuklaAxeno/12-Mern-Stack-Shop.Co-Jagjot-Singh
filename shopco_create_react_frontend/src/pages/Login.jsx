@@ -30,6 +30,8 @@ export default function Login({signup=false}) {
             }
             if (signup) {
               window.alert(data.message || "Account created successfully. Please log in.");
+              setEmail("");
+              setPassword("");
               navigate("/login", { replace: true });
             } else {
               navigate("/", { replace: true });
@@ -68,7 +70,7 @@ export default function Login({signup=false}) {
               placeholder="user@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              required
+              
             />
           </div>
 
@@ -81,7 +83,6 @@ export default function Login({signup=false}) {
               placeholder="••••••••"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              required
             />    
           </div>
 

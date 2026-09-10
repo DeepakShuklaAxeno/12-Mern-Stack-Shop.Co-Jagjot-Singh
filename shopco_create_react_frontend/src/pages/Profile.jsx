@@ -46,6 +46,7 @@ export default function Profile() {
     const data = await response.json();
     setMessage(data.message);
     if (response.ok) setUser(data.user);
+    
   };
 
   if (!user) {
@@ -84,7 +85,7 @@ export default function Profile() {
           >
             Save Changes
           </button>
-          {message && <p className="mt-3 text-sm text-black/60">{message}</p>}
+          {message && <p className="mt-3 text-sm text-red/60">{message}</p>}
         </form>
 
         <section className="rounded-2xl border border-black/10 p-6">

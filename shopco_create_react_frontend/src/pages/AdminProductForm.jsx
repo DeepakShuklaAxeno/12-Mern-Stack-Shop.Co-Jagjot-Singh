@@ -255,27 +255,39 @@ export default function AdminProductForm() {
           </label>
         ))}
 
-        <label className="mt-4 block text-sm font-bold">
+        <label className="mt-4 w-full block text-sm font-bold">
           Category
+          <div className="relative mt-2">
+            <select
+              className="w-full appearance-none rounded-full bg-[#f0f0f0] px-4 py-3 pr-10 font-normal outline-none"
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  category: event.target.value,
+                })
+              }
+              value={form.category || ""}
+            >
+              <option value="">Select category</option>
 
-          <select
-            className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none"
-            onChange={(event) =>
-              setForm({
-                ...form,
-                category: event.target.value,
-              })
-            }
-            value={form.category || ""}
-          >
-            <option value="">Select category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
 
-            {categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+            <svg
+              aria-hidden="true"
+              className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              viewBox="0 0 24 24"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
         </label>
 
         <button
