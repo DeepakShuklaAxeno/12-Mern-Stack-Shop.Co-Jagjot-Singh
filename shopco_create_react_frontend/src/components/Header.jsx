@@ -60,8 +60,24 @@ export default function Header({ cartCount = 0 }) {
         if (active) setUser(null);
       });
 
+<<<<<<< HEAD
     refreshCart();
     window.addEventListener("cart-updated", refreshCart);
+=======
+    fetch(`${API_BASE_URL}cart`, { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const items = data?.cart?.cartItems || [];
+
+        const count = items.reduce(
+          (total, item) => total + Number(item.quantity || 0),
+          0
+        );
+
+        setCartItemsCount(count);
+      })
+      .catch(() => setCartItemsCount(0));
+>>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
 
     return () => {
       active = false;

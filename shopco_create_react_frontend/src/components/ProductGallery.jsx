@@ -9,9 +9,17 @@ export default function ProductGallery({ images = [], name }) {
   const gallery = images;
   if (!gallery.length) return <div className="aspect-square rounded-2xl bg-[#f0eeed]" />;
   return (
+<<<<<<< HEAD
     <div className="grid grid-cols-[minmax(0,0.28fr)_minmax(0,1fr)] grid-rows-3 gap-2">
       {gallery.slice(0, 3).map((image, index) => <button aria-label={`View image ${index + 1}`} className={`aspect-square overflow-hidden rounded-xl bg-[#f0eeed] transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md ${activeImage === index ? "ring-2 ring-black" : ""}`} key={`${image}+index`} onClick={() => setActiveImage(index)} type="button"><img alt={`${name} thumbnail ${index + 1}`} className="block h-full w-full object-cover" src={getImageUrl(image)} /></button>)}
       <div className="col-start-2 row-span-3 row-start-1 aspect-square overflow-hidden rounded-2xl bg-[#f0eeed]"><img alt={name} className="block h-full w-full object-cover" src={getImageUrl(gallery[activeImage])} /></div>
+=======
+    <div className="flex flex-col-reverse gap-3 sm:flex-row">
+      <div className="flex gap-3 sm:w-24 sm:flex-col">
+        {gallery.slice(0, 3).map((image, index) => <button aria-label={`View image ${index + 1}`} className={`transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md overflow-hidden rounded-xl bg-[#f0eeed] ${activeImage === index ? "ring-2 ring-black" : ""}`} key={`${image}+index`} onClick={() => setActiveImage(index)} type="button"><img alt={`${name} thumbnail ${index + 1}`} className="aspect-square w-full object-cover" src={getImageUrl(image)} /></button>)}
+      </div>
+      <div className="flex-1 overflow-hidden rounded-2xl bg-[#f0eeed]"><img alt={name} className="aspect-square w-full object-cover" src={getImageUrl(gallery[activeImage])} /></div>
+>>>>>>> d6f3545c1d815cd491b600394a9965c33eb6c70f
     </div>
   );
 }
