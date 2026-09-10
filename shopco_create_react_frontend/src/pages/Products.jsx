@@ -23,7 +23,7 @@ function Chevron() {
 
 export default function Products() {
   const [params, setParams] = useSearchParams();
-  const search = params.get("search") || "";
+  const search = params.get("search") || ""; 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [total, setTotal] = useState(0);
