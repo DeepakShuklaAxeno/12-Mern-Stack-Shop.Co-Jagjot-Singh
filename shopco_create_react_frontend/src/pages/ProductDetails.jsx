@@ -9,33 +9,7 @@ import ReviewCard from "../components/ReviewCard";
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
 
-const reviews = [
-  {
-    name: "Samantha D.",
-    rating: 5,
-    quote:
-      "I absolutely love this product! The design is unique and the fabric feels so comfortable.",
-    date: "August 14, 2023",
-  },
-  {
-    name: "Alex M.",
-    rating: 4.5,
-    quote: "The product exceeded my expectations. The quality is excellent.",
-    date: "August 15, 2023",
-  },
-  {
-    name: "Ethan R.",
-    rating: 4,
-    quote: "The material is comfortable and the fit is perfect.",
-    date: "August 16, 2023",
-  },
-  {
-    name: "Olivia P.",
-    rating: 4.5,
-    quote: "I value simplicity and functionality. This product gets it right.",
-    date: "August 17, 2023",
-  },
-];
+
 
 export default function ProductDetails() {
   const { productId } = useParams();
@@ -46,6 +20,13 @@ export default function ProductDetails() {
   const [selectedColor, setSelectedColor] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewError, setReviewError] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -58,8 +39,7 @@ export default function ProductDetails() {
         setSelectedColor(data.product.colorOptions?.[0] || "");
 
         const relatedResponse = await fetch(
-          `${API_BASE_URL}products?limit=4&category=${
-            data.product.category?._id || data.product.category
+          `${API_BASE_URL}products?limit=4&category=${data.product.category?._id || data.product.category
           }`
         );
         if (relatedResponse.ok) {
@@ -94,6 +74,44 @@ export default function ProductDetails() {
     }
   }
 
+  async function submitReview(event) {
+    event.preventDefault();
+    setReviewSubmitting(true);
+    setReviewError("");
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}products/${productId}/reviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            rating: reviewRating,
+            reviewText,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to submit review");
+      }
+
+      setProduct(data.product);
+      setReviewText("");
+      setReviewRating(5);
+      setReviewModalOpen(false);
+    } catch (error) {
+      setReviewError(error.message);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
   if (loading) {
     return (
       <main className="p-10 text-center font-sans">Loading product...</main>
@@ -102,7 +120,7 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <main className="p-10 text-center font-sans">
+      <main className="p-10 text-center font-sans text-red-400">
         {message || "Product not found"}
       </main>
     );
@@ -151,11 +169,10 @@ export default function ProductDetails() {
                 {(product.colorOptions || []).map((color) => (
                   <button
                     aria-label={`Select ${color}`}
-                    className={`rounded-full border px-3 py-2 text-xs ${
-                      selectedColor === color
+                    className={`rounded-full border px-3 py-2 text-xs ${selectedColor === color
                         ? "border-black bg-black text-white"
                         : "border-black/10 bg-[#f0f0f0]"
-                    }`}
+                      }`}
                     key={color}
                     onClick={() => setSelectedColor(color)}
                     type="button"
@@ -171,11 +188,10 @@ export default function ProductDetails() {
               <div className="flex flex-wrap gap-2">
                 {(product.sizeOptions || []).map((size) => (
                   <button
-                    className={`rounded-full px-5 py-2.5 text-sm ${
-                      selectedSize === size
+                    className={`rounded-full px-5 py-2.5 text-sm ${selectedSize === size
                         ? "bg-black text-white"
                         : "bg-[#f0f0f0] text-black/60"
-                    }`}
+                      }`}
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     type="button"
@@ -193,7 +209,7 @@ export default function ProductDetails() {
                 value={quantity}
               />
               <button
-                className="flex-1 rounded-full bg-black px-6 py-3 text-sm text-white disabled:opacity-50"
+                className="flex-1 rounded-full bg-black text-white px-6 py-3 text-sm text-whitetransition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md disabled:opacity-50"
                 disabled={!product.stockQuantity}
                 onClick={addToCart}
                 type="button"
@@ -201,7 +217,7 @@ export default function ProductDetails() {
                 {product.stockQuantity ? "Add to Cart" : "Out of Stock"}
               </button>
             </div>
-            {message && <p className="mt-3 text-sm text-black/60">{message}</p>}
+            {message && <p className="mt-3 text-sm text-red/60">{message}</p>}
           </div>
         </section>
 
@@ -227,15 +243,90 @@ export default function ProductDetails() {
             </h2>
             <button
               className="rounded-full bg-black px-5 py-3 text-xs text-white"
+              onClick={() => {
+                setReviewError("");
+                setReviewModalOpen(true);
+              }}
               type="button"
             >
               Write a Review
             </button>
+            {reviewModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <form
+                  className="w-full max-w-md rounded-2xl bg-white p-6"
+                  onSubmit={submitReview}
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold">Write a Review</h2>
+
+                    <button
+                      aria-label="Close review form"
+                      className="text-2xl"
+                      onClick={() => setReviewModalOpen(false)}
+                      type="button"
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <label className="mt-6 block text-sm font-bold">
+                    Rating
+                    <select
+                      className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal"
+                      onChange={(event) => setReviewRating(Number(event.target.value))}
+                      value={reviewRating}
+                    >
+                      <option value={5}>5 stars</option>
+                      <option value={4}>4 stars</option>
+                      <option value={3}>3 stars</option>
+                      <option value={2}>2 stars</option>
+                      <option value={1}>1 star</option>
+                    </select>
+                  </label>
+
+                  <label className="mt-5 block text-sm font-bold">
+                    Review
+                    <textarea
+                      className="mt-2 min-h-32 w-full rounded-xl bg-[#f0f0f0] p-4 font-normal"
+                      maxLength={500}
+                      minLength={5}
+                      onChange={(event) => setReviewText(event.target.value)}
+                      placeholder="Share your experience"
+                      required
+                      value={reviewText}
+                    />
+                  </label>
+
+                  {reviewError && (
+                    <p className="mt-3 text-sm text-red-600">{reviewError}</p>
+                  )}
+
+                  <button
+                    className="mt-5 w-full rounded-full bg-black py-3 text-sm text-white disabled:opacity-50"
+                    disabled={reviewSubmitting}
+                    type="submit"
+                  >
+                    {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            {reviews.map((review) => (
-              <ReviewCard key={review.name} {...review} />
-            ))}
+
+            {product.reviews?.length ? (
+              product.reviews.map((review) => (
+                <ReviewCard
+                  key={review._id}
+                  name={review.userId?.name || "Customer"}
+                  rating={review.rating}
+                  quote={review.reviewText}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-black/50">No reviews yet.</p>
+            )}
           </div>
         </section>
 
@@ -250,7 +341,8 @@ export default function ProductDetails() {
           </div>
         </section>
       </div>
-      
+
     </main>
   );
 }
+

@@ -61,7 +61,7 @@ export default function Filters({
 
                 <button
                     aria-label="Close filters"
-                    className="text-3xl leading-none text-black/50 lg:hidden"
+                    className="text-3xl leading-none hover:bg-gray-400 text-black/50 lg:hidden"
                     onClick={onClose}
                     type="button"
                 >
@@ -73,7 +73,7 @@ export default function Filters({
                 <div className="mt-2 space-y-4 font-sans text-base text-black/60">
                     {categories.map((category) => (
                         <button
-                            className="flex w-full justify-between"
+                            className="flex w-full justify-between transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md"
                             key={category._id}
                             onClick={() =>
                                 update("category", category._id)
@@ -144,7 +144,7 @@ export default function Filters({
                 <div className="mt-4 flex flex-wrap gap-2">
                     {sizes.map((size) => (
                         <button
-                            className={`rounded-full px-5 py-2.5 font-sans text-sm ${
+                            className={`transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md rounded-full px-5 py-2.5 font-sans text-sm ${
                                 active.size === size
                                     ? "bg-black text-white"
                                     : "bg-[#f0f0f0] text-black/60"
@@ -205,7 +205,7 @@ export default function Filters({
             </FilterGroup>
 
             <button
-                className="mt-5 w-full rounded-full bg-black py-3.5 font-sans text-sm text-white"
+                className="  hover:shadow-mdmt-5 w-full rounded-full bg-black py-3.5 font-sans text-sm text-white"
                 onClick={onClose}
                 type="button"
             >

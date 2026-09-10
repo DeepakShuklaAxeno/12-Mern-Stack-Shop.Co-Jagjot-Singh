@@ -109,7 +109,7 @@ export default function Cart() {
         </h1>
         {message && <p className="mt-3 text-sm text-green/50">{message}</p>}
         {!items.length ? (
-          <p className="mt-8 rounded-2xl border border-black/10 p-8 text-center font-sans text-black/60">
+          <p className="mt-8 rounded-2xl border border-black/10 p-8 text-center font-sans text-red/60">
             Your cart is empty.
           </p>
         ) : (

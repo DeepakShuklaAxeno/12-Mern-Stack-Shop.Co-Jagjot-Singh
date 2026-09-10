@@ -21,12 +21,13 @@ function Icon({ children, label, className = "size-5" }) {
   );
 }
 
-export default function Header({cartCount=0}) {
+export default function Header({ cartCount = 0 }) {
   const [promoVisible, setPromoVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [user, setUser] = useState(null);
+  const [cartItemsCount, setCartItemsCount] = useState(cartCount);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -41,6 +42,20 @@ export default function Header({cartCount=0}) {
       .catch(() => {
         if (active) setUser(null);
       });
+
+    fetch(`${API_BASE_URL}cart`, { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const items = data?.cart?.cartItems || [];
+
+        const count = items.reduce(
+          (total, item) => total + Number(item.quantity || 0),
+          0
+        );
+
+        setCartItemsCount(count);
+      })
+      .catch(() => setCartItemsCount(0));
 
     return () => {
       active = false;
@@ -88,11 +103,11 @@ export default function Header({cartCount=0}) {
         </div>
       )}
 
-      <div className="page-gutter mx-auto flex min-h-20 max-w-300 items-center gap-4 lg:gap-8">
+      <div className="page-gutter mx-auto flex min-h-20 max-w-300 items-center gap-4 lg:gap-8 ">
         <button
           aria-expanded={menuOpen}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
-          className="p-1 lg:hidden"
+          className="p-1 lg:hidden "
           onClick={() => setMenuOpen((open) => !open)}
           type="button"
         >
@@ -133,7 +148,7 @@ export default function Header({cartCount=0}) {
             <Icon label="Search"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></Icon>
           </button>
           <Link
-            aria-label={`Shopping cart with ${cartCount} items`}
+            aria-label={`Shopping cart with ${cartItemsCount} items`}
             className="relative p-1"
             to="/cart"
           >
@@ -143,16 +158,16 @@ export default function Header({cartCount=0}) {
               <circle cx="17" cy="20" r="1" />
             </Icon>
 
-            {cartCount > 0 && (
+            {cartItemsCount > 0 && (
               <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                {cartCount}
+                {cartItemsCount}
               </span>
             )}
           </Link>
           <Link aria-label={user ? "Profile" : "Account"} className="p-1" to={user ? "/profile" : "/login"}>
             <Icon label="Account"><circle cx="12" cy="8" r="3.5" /><path d="M5 20a7 7 0 0 1 14 0" /></Icon>
           </Link>
-          {user && <button className="hidden font-sans text-sm underline underline-offset-2 lg:block" onClick={handleLogout} type="button">Log out</button>}
+          {user && <button className="hidden font-sans text-sm underline underline-offset-2 lg:block " onClick={handleLogout} type="button">Log out</button>}
         </div>
       </div>
 
@@ -183,7 +198,7 @@ export default function Header({cartCount=0}) {
             {user && <Link onClick={() => setMenuOpen(false)} to="/orders">Orders</Link>}
             {user && <Link onClick={() => setMenuOpen(false)} to="/profile">Profile</Link>}
             {user?.role === "admin" && <Link onClick={() => setMenuOpen(false)} to="/admin">Admin Dashboard</Link>}
-            {user ? <button className="text-left" onClick={handleLogout} type="button">Log out</button> : <Link onClick={() => setMenuOpen(false)} to="/login">Log in</Link>}
+            {user ? <button className="text-left transition-all duration-200 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:brightness-95 shadow-sm hover:shadow-md" onClick={handleLogout} type="button">Log out</button> : <Link onClick={() => setMenuOpen(false)} to="/login">Log in</Link>}
           </div>
         </nav>
       )}

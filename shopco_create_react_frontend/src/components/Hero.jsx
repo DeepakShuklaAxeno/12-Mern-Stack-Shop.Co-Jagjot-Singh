@@ -15,7 +15,7 @@ function Hero() {
                     </p>
 
                     <Link
-                        className="mt-[clamp(1.25rem,2.5vw,2rem)] w-full inline-flex min-w-52 justify-center rounded-full bg-black px-[clamp(1.5rem,3vw,2rem)] py-[clamp(0.75rem,1.5vw,1rem)] font-sans md:max-w-auto text-[clamp(0.875rem,1vw,1rem)] text-white transition-transform hover:scale-105"
+                        className="mt-[clamp(1.25rem,2.5vw,2rem)]  w-full inline-flex min-w-52  justify-center rounded-full bg-black px-[clamp(1.5rem,3vw,2rem)] py-[clamp(0.75rem,1.5vw,1rem)] font-sans md:max-w-52.5 text-[clamp(0.875rem,1vw,1rem)] text-white transition-transform hover:scale-105"
                         to="/products"
                     >
                         Shop Now
