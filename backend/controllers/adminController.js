@@ -4,18 +4,24 @@ const Product = require("../models/Product");
 const User = require("../models/User");
 const Category = require("../models/Category");
 
-const productFields = (body) => {
+const productFields = (body, files = [], existingImages = []) => {
     const markedPrice = Number(body.markedPrice);
     const sellingPrice = Number(body.sellingPrice ?? markedPrice);
+
+    const uploadedImages = files.map((file) => `/assets/${file.filename}`);
+
     return {
         name: body.name,
         description: body.description,
         category: body.category,
         markedPrice,
         sellingPrice,
-        discountPercentage: Number(body.discountPercentage ?? Math.max(0, ((markedPrice - sellingPrice) / markedPrice) * 100)),
+        discountPercentage: Number(
+            body.discountPercentage ??
+            Math.max(0, ((markedPrice - sellingPrice) / markedPrice) * 100)
+        ),
         stockQuantity: Number(body.stockQuantity ?? 0),
-        images: Array.isArray(body.images) ? body.images : [],
+        images: uploadedImages.length > 0 ? uploadedImages : existingImages,
         sizeOptions: Array.isArray(body.sizeOptions) ? body.sizeOptions : [],
         colorOptions: Array.isArray(body.colorOptions) ? body.colorOptions : [],
     };
@@ -33,7 +39,7 @@ const listProducts = async (req, res) => res.status(200).json({ products: await 
 
 const createProduct = async (req, res) => {
     try {
-        const product = await Product.create(productFields(req.body));
+        const product = await Product.create(productFields(req.body, req.files));
         return res.status(201).json({ message: "Product created", product });
     } catch (error) {
         return res.status(400).json({ message: "Unable to create product", error: error.message });
@@ -42,12 +48,34 @@ const createProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        if (!mongoose.isValidObjectId(req.params.productId)) return res.status(400).json({ message: "Invalid product id" });
-        const product = await Product.findByIdAndUpdate(req.params.productId, productFields(req.body), { new: true, runValidators: true }).populate("category");
-        if (!product) return res.status(404).json({ message: "Product not found" });
-        return res.status(200).json({ message: "Product updated", product });
+        if (!mongoose.isValidObjectId(req.params.productId)) {
+            return res.status(400).json({ message: "Invalid product id" });
+        }
+
+        const existingProduct = await Product.findById(req.params.productId);
+
+        if (!existingProduct) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        const product = await Product.findByIdAndUpdate(
+            req.params.productId,
+            productFields(req.body, req.files, existingProduct.images),
+            {
+                new: true,
+                runValidators: true,
+            }
+        ).populate("category");
+
+        return res.status(200).json({
+            message: "Product updated",
+            product,
+        });
     } catch (error) {
-        return res.status(400).json({ message: "Unable to update product", error: error.message });
+        return res.status(400).json({
+            message: "Unable to update product",
+            error: error.message,
+        });
     }
 };
 

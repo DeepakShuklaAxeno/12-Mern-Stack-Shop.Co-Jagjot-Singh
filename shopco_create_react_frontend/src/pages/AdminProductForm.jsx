@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -15,9 +14,11 @@ const initial = {
   discountPercentage: "",
   stockQuantity: "",
   images: "",
-  sizeOptions: "Small,Medium,Large,X-Large",
+  sizeOptions: "S,M,L,XL,XXL",
   colorOptions: "",
 };
+
+const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL"];
 
 export default function AdminProductForm() {
   const { productId } = useParams();
@@ -25,7 +26,15 @@ export default function AdminProductForm() {
 
   const [form, setForm] = useState(initial);
   const [categories, setCategories] = useState([]);
+  const [images, setImages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+
+  const [selectedSizes, setSelectedSizes] = useState(SIZE_OPTIONS);
+
+  const [selectedColors, setSelectedColors] = useState([]);
+
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}admin/categories`, {
@@ -46,6 +55,12 @@ export default function AdminProductForm() {
             sizeOptions: product.sizeOptions?.join(",") || "",
             colorOptions: product.colorOptions?.join(",") || "",
           });
+          setSelectedSizes(
+            (product.sizeOptions || []).filter((size) =>
+              SIZE_OPTIONS.includes(size)
+            )
+          );
+          setSelectedColors(product.colorOptions || []);
         });
     }
   }, [productId]);
@@ -53,47 +68,49 @@ export default function AdminProductForm() {
   const submit = async (event) => {
     event.preventDefault();
 
-    const body = {
-      ...form,
-      markedPrice: Number(form.markedPrice),
-      sellingPrice: Number(form.sellingPrice),
-      discountPercentage: Number(form.discountPercentage || 0),
-      stockQuantity: Number(form.stockQuantity),
+    const formData = new FormData();
 
-      images: form.images
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("category", form.category);
+    formData.append("markedPrice", form.markedPrice);
+    formData.append("sellingPrice", form.sellingPrice);
+    formData.append("discountPercentage", form.discountPercentage || "0");
+    formData.append("stockQuantity", form.stockQuantity || "0");
 
-      sizeOptions: form.sizeOptions
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
+    selectedSizes.forEach((size) => {
+      formData.append("sizeOptions", size);
+    });
 
-      colorOptions: form.colorOptions
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
-    };
+    selectedColors.forEach((color) => {
+      formData.append("colorOptions", color);
+    });
 
-    const response = await fetch(
-      `${API_BASE_URL}admin/products${productId ? `/${productId}` : ""}`,
-      {
-        method: productId ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(body),
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}admin/products${productId ? `/${productId}` : ""}`,
+        {
+          method: productId ? "PATCH" : "POST",
+          credentials: "include",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      setMessage(data.message || "Something went wrong.");
+      setIsError(!response.ok);
+
+      if (response.ok) {
+        navigate("/admin");
       }
-    );
-
-    const data = await response.json();
-
-    setMessage(data.message);
-
-    if (response.ok) {
-      navigate("/admin");
+    } catch {
+      setMessage("Unable to connect to the server. Please try again.");
+      setIsError(true);
     }
   };
 
@@ -104,13 +121,13 @@ export default function AdminProductForm() {
     ["sellingPrice", "Selling price"],
     ["discountPercentage", "Discount percentage"],
     ["stockQuantity", "Stock quantity"],
-    ["images", "Image URLs (comma separated)"],
-    ["sizeOptions", "Sizes (comma separated)"],
+    ["images", "Images"],
+    ["sizeOptions", "Sizes"],
     ["colorOptions", "Colors (comma separated)"],
   ];
 
   return (
-    <main className="mx-auto max-w-190 px-4 py-8 bg-25 font-sans sm:px-6">
+    <main className="mx-auto max-w-190 px-4 mb-25 py-8 bg-25 font-sans sm:px-6">
       <div className="flex items-center justify-between">
         <h1 className="font-integral text-3xl uppercase">
           {productId ? "Edit Product" : "Create Product"}
@@ -143,6 +160,86 @@ export default function AdminProductForm() {
                 }
                 value={form[key] || ""}
               />
+            ) : key === "images" ? (
+              <div className="mt-2 space-y-3">
+                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-black/20 bg-[#f0f0f0] p-6 font-normal">
+                  <span className="text-xl">+</span>
+                  <span>Choose product images</span>
+
+                  <input
+                    accept="image/*"
+                    className="hidden"
+                    multiple
+                    onChange={(event) => {
+                      const files = Array.from(event.target.files || []);
+
+                      setImages((current) => [...current, ...files]);
+                      setSelectedFiles((current) => [...current, ...files]);
+                      event.target.value = "";
+                    }}
+                    type="file"
+                  />
+                </label>
+
+                {selectedFiles.length > 0 && (
+                  <div className="space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <div
+                        className="flex items-center justify-between rounded-xl bg-[#f0f0f0] px-4 py-3 font-normal"
+                        key={`${file.name}-${file.lastModified}-${index}`}
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="text-lg">🖼</span>
+                          <span className="truncate text-sm">{file.name}</span>
+                        </div>
+
+                        <button
+                          aria-label={`Remove ${file.name}`}
+                          className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-lg leading-none text-white"
+                          onClick={() => {
+                            setImages((current) =>
+                              current.filter((_, fileIndex) => fileIndex !== index)
+                            );
+                            setSelectedFiles((current) =>
+                              current.filter((_, fileIndex) => fileIndex !== index)
+                            );
+                          }}
+                          type="button"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : key === "sizeOptions" ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SIZE_OPTIONS.map((size) => {
+                  const isSelected = selectedSizes.includes(size);
+
+                  return (
+                    <button
+                      className={`rounded-full border px-5 py-3 ${
+                        isSelected
+                          ? " bg-black text-white"
+                          : " bg-[#f0f0f0] text-black"
+                      }`}
+                      key={size}
+                      onClick={() =>
+                        setSelectedSizes((current) =>
+                          current.includes(size)
+                            ? current.filter((value) => value !== size)
+                            : [...current, size]
+                        )
+                      }
+                      type="button"
+                    >
+                      {size}
+                    </button>
+                  );
+                })}
+              </div>
             ) : (
               <input
                 className="mt-2 w-full rounded-full bg-[#f0f0f0] px-4 py-3 font-normal outline-none"
@@ -189,11 +286,20 @@ export default function AdminProductForm() {
         </button>
 
         {message && (
-          <p className="mt-3 text-sm text-black/60">
+          <div
+            className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+              isError
+                ? "border-red-300 bg-red-50 text-red-700"
+                : "border-green-300 bg-green-50 text-green-700"
+            }`}
+            role={isError ? "alert" : "status"}
+          >
             {message}
-          </p>
+          </div>
         )}
       </form>
+
+      
     </main>
   );
 }

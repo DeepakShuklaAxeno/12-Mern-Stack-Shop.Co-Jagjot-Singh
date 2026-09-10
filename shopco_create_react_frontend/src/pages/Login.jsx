@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:5000/api/";
 
 export default function Login({signup=false}) {
   const navigate = useNavigate();
-    let [email, setEmail] = useState("");
-    let [password, setPassword] = useState("");
-    let [error, setError] = useState("");
-    let [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     
     async function handleSubmit(event){
         event.preventDefault();

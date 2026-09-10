@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose'); 
+const path = require("path");
 const cookieParser = require('cookie-parser');
 const app = express();
 app.use(express.json());
@@ -12,6 +13,7 @@ app.use(cors({
 }));
 app.use(cookieParser())
 
+app.use("/assets", express.static(path.join(__dirname, "src/assets")));
 
 
 app.get("/api/health",(req,res) => {

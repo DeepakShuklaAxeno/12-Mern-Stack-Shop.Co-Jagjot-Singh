@@ -4,6 +4,7 @@ import BrandStrip from "../components/BrandStrip";
 import ProductSection from "../components/ProductSection";
 import ReviewCard from "../components/ReviewCard";
 import Hero from "../components/Hero";
+import getImageUrl from "../utls/imgageUrl";
 
 const API_BASE_URL =
     import.meta.env.VITE_BACKEND_API_BASE_URL ||
@@ -81,7 +82,7 @@ export default function Home() {
                                 <img
                                     alt={name}
                                     className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    src={product.images[0]}
+                                    src={getImageUrl(product.images[0])}
                                 />
                             )}
 
